@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_add"
+        android:enabled="true"
+        android:icon="@drawable/ic_baseline_add_24"
+        android:title="글 추가"/>
+
+    <item
+        android:id="@+id/action_chat"
+        android:enabled="true"
+        android:icon="@drawable/ic_baseline_chat_24"
+        android:title="채팅"/>
+
+    <item
+        android:id="@+id/action_home"
+        android:enabled="true"
+        android:icon="@drawable/ic_baseline_home_24"
+        android:title="홈"/>
+
+    <item
+        android:id="@+id/action_list"
+        android:enabled="true"
+        android:icon="@drawable/ic_baseline_list_24"
+        android:title="리스트"/>
+
+    <item
+        android:id="@+id/action_person"
+        android:enabled="true"
+        android:icon="@drawable/ic_baseline_person_24"
+        android:title="내 정보"/>
+</menu>
