@@ -5,12 +5,23 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigationView;
@@ -21,13 +32,44 @@ public class MainActivity extends AppCompatActivity {
     private Frag3 frag3;
     private Frag4 frag4;
     private Frag5 frag5;
+    private static final String TAG = "MainActivity";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-
+        findViewById(R.id.floatingActionButton3).setOnClickListener(onClickListener);
         bottomNavigationView = findViewById(R.id.bottomNavi);
+        final ArrayList<PostInfo> postlist = new ArrayList<>();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("posts")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Log.d(TAG, document.getId() + " => " + document.getData());
+                                postlist.add(new PostInfo(
+                                        document.getData().get("title").toString(),
+                                        document.getData().get("content").toString(),
+                                        document.getData().get("publisher").toString()
+
+                                ));
+                                Log.e("로그 : ","데이터 : "+document.getData().get("title").toString());
+                                RecyclerView recyclerView = findViewById(R.id.recyclerView);
+                                recyclerView.setHasFixedSize(true);
+                                recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+
+                                RecyclerView.Adapter mAdapter = new MainAdapter(MainActivity.this,postlist);
+                                recyclerView.setAdapter(mAdapter);
+                            }
+                        } else {
+                            Log.d(TAG, "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -59,6 +101,15 @@ public class MainActivity extends AppCompatActivity {
 
         setFrag(0); // 첫프래그먼트 화면 지정(ㅇ)안에 넣음 댐
     }
+
+    View.OnClickListener onClickListener = (v) ->{
+      switch (v.getId()){
+          case R.id.floatingActionButton3:
+              Intent intent = new Intent(MainActivity.this, WritePostActivity.class);
+              startActivity(intent);
+              break;
+      }
+    };
 
     private void setFrag(int n){
         fm = getSupportFragmentManager();
