@@ -54,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
         if(user == null){
             myStartActivity(SignUpActivity.class);
         }else{
+            myStartActivity(MemberInitActivity.class);
+            //  myStartActivity(CameraActivity.class);
 
             DocumentReference docRef = db.collection("users").document(user.getUid());
             docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {

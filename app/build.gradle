@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.barter"
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 30
         multiDexEnabled true
         versionCode 1
@@ -29,6 +29,7 @@ android {
 }
 
 dependencies {
+    implementation 'com.google.firebase:firebase-storage'
     implementation 'com.github.bumptech.glide:glide:4.11.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
     implementation 'androidx.appcompat:appcompat:1.2.0'
