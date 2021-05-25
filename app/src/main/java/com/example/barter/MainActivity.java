@@ -21,6 +21,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserInfo;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -52,18 +54,27 @@ public class MainActivity extends AppCompatActivity {
         if(user == null){
             myStartActivity(SignUpActivity.class);
         }else{
-                for (UserInfo profile : user.getProviderData()) {
 
-                    // Name, email address, and profile photo Url
-                    String name = profile.getDisplayName();
-                    Log.e("이름: ","이름: "+name);
-                    if (name != null){
-                        if(name.length() == 0){
+            DocumentReference docRef = db.collection("users").document(user.getUid());
+            docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+                        if (document.exists()) {
+                            Log.d(TAG, "DocumentSnapshot data: " + document.getData());
+
+
+                        } else {
+
+                            Log.d(TAG, "No such document");
                             myStartActivity(MemberInitActivity.class);
                         }
+                    } else {
+                        Log.d(TAG, "get failed with ", task.getException());
                     }
-
                 }
+            });
 
         }
 
