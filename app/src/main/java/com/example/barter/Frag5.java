@@ -1,5 +1,6 @@
 package com.example.barter;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,7 +17,7 @@ public class Frag5 extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable  ViewGroup container, @Nullable  Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.frag5,container,false);
-
         return view;
     }
+
 }

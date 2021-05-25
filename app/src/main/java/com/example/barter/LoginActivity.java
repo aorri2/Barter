@@ -27,7 +27,7 @@ public class LoginActivity extends AppCompatActivity {
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
 
-        findViewById(R.id.btn_gotosignup).setOnClickListener(onClickListener);
+        findViewById(R.id.btn_checkinfo).setOnClickListener(onClickListener);
         findViewById(R.id.btn_login).setOnClickListener(onClickListener);
     }
 
@@ -45,7 +45,7 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             switch (v.getId()) {
-                case R.id.btn_gotosignup:
+                case R.id.btn_checkinfo:
                     Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
                     startActivity(intent);
                     break;
