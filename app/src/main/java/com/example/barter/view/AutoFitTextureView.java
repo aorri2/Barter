@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.barter;
+package com.example.barter.view;
 
 import android.content.Context;
 import android.util.AttributeSet;

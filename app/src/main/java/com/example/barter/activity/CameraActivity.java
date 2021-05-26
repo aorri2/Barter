@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.barter;
+package com.example.barter.activity;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -24,6 +24,9 @@ import android.os.Bundle;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.barter.R;
+import com.example.barter.fragment.Camera2BasicFragment;
 
 import java.io.File;
 import java.io.FileOutputStream;

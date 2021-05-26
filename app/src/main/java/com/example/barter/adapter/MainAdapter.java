@@ -1,19 +1,18 @@
-package com.example.barter;
+package com.example.barter.adapter;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.media.Image;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.barter.PostInfo;
+import com.example.barter.R;
+
 import java.util.ArrayList;
-import java.util.List;
 
 public class MainAdapter extends RecyclerView.Adapter<MainAdapter.MainViewHolder> {
     private ArrayList<PostInfo> mDataset;
