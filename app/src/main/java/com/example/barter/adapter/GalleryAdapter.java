@@ -1,74 +1,107 @@
 package com.example.barter.adapter;
 
 
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.annotation.GlideModule;
+import com.example.barter.GlideApp;
 import com.example.barter.R;
 
-public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHolder> {
+import java.util.ArrayList;
 
-    private String[] localDataSet;
+
+public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryViewHolder> {
+
+    private ArrayList<String> mDataset;
+    private Activity activity;
 
     /**
      * Provide a reference to the type of views that you are using
      * (custom ViewHolder).
      */
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        private final TextView textView;
+    public static class GalleryViewHolder extends RecyclerView.ViewHolder {
+//        private final TextView textView;
         public CardView cardView;
 
-        public ViewHolder(CardView view) {
+        public GalleryViewHolder(CardView view) {
             super(view);
             // Define click listener for the ViewHolder's View
-
-            textView = (TextView) view.findViewById(R.id.textView);
+            cardView = view;
+//            textView = (TextView) view.findViewById(R.id.textView4);
         }
 
-        public TextView getTextView() {
-            return textView;
-        }
+//        public TextView getTextView() {
+//            return textView;
+//        }
     }
 
     /**
      * Initialize the dataset of the Adapter.
      *
-     * @param dataSet String[] containing the data to populate views to be used
+//     *@param dataSet String[] containing the data to populate views to be used
      * by RecyclerView.
      */
-    public GalleryAdapter(String[] dataSet) {
-        localDataSet = dataSet;
+    public GalleryAdapter(Activity activity,ArrayList<String> myDataset) {
+
+        this.activity = activity;
+        mDataset = myDataset;
     }
 
     // Create new views (invoked by the layout manager)
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+    public GalleryViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         // Create a new view, which defines the UI of the list item
-        CardView view =(CardView) LayoutInflater.from(viewGroup.getContext())
+        CardView cardView =(CardView) LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.item_gallery, viewGroup, false);
 
-        return new ViewHolder(view);
+
+
+        return new GalleryViewHolder(cardView);
     }
 
     // Replace the contents of a view (invoked by the layout manager)
     @Override
-    public void onBindViewHolder(ViewHolder viewHolder, final int position) {
+    public void onBindViewHolder(GalleryViewHolder viewHolder, final int position) {
+        CardView cardView = viewHolder.cardView;
 
-        // Get element from your dataset at this position and replace the
-        // contents of the view with that element
-        TextView textView = viewHolder.cardView.findViewById(R.id.textView4);
-        textView.setText(localDataSet[position]);
+        cardView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent resultIntent = new Intent();
+                resultIntent.putExtra("profilePath",mDataset.get(viewHolder.getAdapterPosition()));
+                activity.setResult(Activity.RESULT_OK, resultIntent);
+
+                activity.finish();
+            }
+        });
+
+        ImageView imageView = cardView.findViewById(R.id.iv_itemGallery);
+        Bitmap bmp = BitmapFactory.decodeFile(mDataset.get(position));
+        imageView.setImageBitmap(bmp);
+
+        GlideApp.with(activity)
+                .load(mDataset.get(position)).placeholder(android.R.drawable.progress_indeterminate_horizontal)
+                .error(android.R.drawable.stat_notify_error)
+                .centerCrop().override(300)
+                .into(imageView);
     }
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return localDataSet.length;
+        return mDataset.size();
     }
 }
 
