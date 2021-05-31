@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.graphics.Path;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -26,11 +27,14 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.core.OrderBy;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -44,6 +48,10 @@ public class MainActivity extends AppCompatActivity {
     private Frag3 frag3;
     private Frag4 frag4;
     private Frag5 frag5;
+    private  FirebaseUser firebaseUser;
+    private FirebaseFirestore firebaseFirestore;
+    private  DocumentReference documentReference;
+    private RecyclerView recyclerView;
     private static final String TAG = "MainActivity";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,18 +62,18 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView = findViewById(R.id.bottomNavi);
         final ArrayList<PostInfo> postlist = new ArrayList<>();
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        firebaseFirestore = FirebaseFirestore.getInstance();
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        if(user == null){
+        if(firebaseUser == null){
             myStartActivity(SignUpActivity.class);
         }else{
-            myStartActivity(WritePostActivity.class);
+
 //            myStartActivity(MemberInitActivity.class);
             //  myStartActivity(CameraActivity.class);
 
-            DocumentReference docRef = db.collection("users").document(user.getUid());
-            docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            documentReference = firebaseFirestore.collection("users").document(firebaseUser.getUid());
+            documentReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                     if (task.isSuccessful()) {
@@ -87,34 +95,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        db.collection("posts")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Log.d(TAG, document.getId() + " => " + document.getData());
-                                postlist.add(new PostInfo(
-                                        document.getData().get("title").toString(),
-                                        (ArrayList<String>) document.getData().get("content"),
-                                        document.getData().get("publisher").toString(),
-                                        new Date(document.getDate("createdAt").getTime())
 
-                                ));
-                                Log.e("로그 : ","데이터 : "+document.getData().get("title").toString());
-                                RecyclerView recyclerView = findViewById(R.id.recyclerView);
-                                recyclerView.setHasFixedSize(true);
-                                recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
-
-                                RecyclerView.Adapter mAdapter = new MainAdapter(MainActivity.this,postlist);
-                                recyclerView.setAdapter(mAdapter);
-                            }
-                        } else {
-                            Log.d(TAG, "Error getting documents: ", task.getException());
-                        }
-                    }
-                });
 
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -146,7 +127,53 @@ public class MainActivity extends AppCompatActivity {
         frag5 = new Frag5();
 
         setFrag(0); // 첫프래그먼트 화면 지정(ㅇ)안에 넣음 댐
+
+        recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
     }
+
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        if(firebaseUser != null){
+            CollectionReference collectionReference = firebaseFirestore.collection("posts");
+
+
+            collectionReference.orderBy("createdAt", Query.Direction.DESCENDING).get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if (task.isSuccessful()) {
+                                ArrayList<PostInfo> postlist = new ArrayList<>();
+                                for (QueryDocumentSnapshot document : task.getResult()) {
+                                    Log.d(TAG, document.getId() + " => " + document.getData());
+                                    postlist.add(new PostInfo(
+                                            document.getData().get("title").toString(),
+                                            (ArrayList<String>) document.getData().get("content"),
+                                            document.getData().get("publisher").toString(),
+                                            new Date(document.getDate("createdAt").getTime()),
+                                            document.getId()
+
+                                    ));
+                                    Log.e("로그 : ","데이터 : "+document.getData().get("title").toString());
+
+
+                                    RecyclerView.Adapter mAdapter = new MainAdapter(MainActivity.this,postlist);
+                                    recyclerView.setAdapter(mAdapter);
+                                }
+                            } else {
+                                Log.d(TAG, "Error getting documents: ", task.getException());
+                            }
+                        }
+                    });
+        }
+
+        }
+
+
+
 
     private void startSignupActivity() {
         Intent intent = new Intent(this,SignUpActivity.class);

@@ -51,14 +51,16 @@ public class WritePostActivity extends AppCompatActivity {
     private RelativeLayout btnBackLayout;
     private ImageView selectedImageView;
     private EditText selectedEditText;
+    private RelativeLayout loaderLayout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_write_post);
         parent = findViewById(R.id.contentsLayout);
         btnBackLayout = findViewById(R.id.btnBackLayout);
-
+        loaderLayout = findViewById(R.id.loaderLayout);
         btnBackLayout.setOnClickListener(onClickListener);
+
         findViewById(R.id.btn_check).setOnClickListener(onClickListener);
         findViewById(R.id.btn_img).setOnClickListener(onClickListener);
         findViewById(R.id.btn_video).setOnClickListener(onClickListener);
@@ -191,6 +193,7 @@ public class WritePostActivity extends AppCompatActivity {
 
         if(title.length() >0 ) {
             ArrayList<String> contentsList= new ArrayList<>();
+            loaderLayout.setVisibility(View.VISIBLE);
 
              user = FirebaseAuth.getInstance().getCurrentUser();
             FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -208,7 +211,8 @@ public class WritePostActivity extends AppCompatActivity {
                         }
                     }else{
                         contentsList.add(pathList.get(pathCount));
-                        final StorageReference mountainImagesRef = storageRef.child("posts/"+documentReference.getId()+"/"+pathCount+".jpg");
+                        String[] pathArray = pathList.get(pathCount).split("\\.");
+                        final StorageReference mountainImagesRef = storageRef.child("posts/"+documentReference.getId()+"/"+pathCount+pathArray[pathArray.length-1]);
 
                         try{
                             InputStream stream = new FileInputStream(new File(pathList.get(pathCount)));
@@ -257,6 +261,10 @@ public class WritePostActivity extends AppCompatActivity {
                 }
 
             }
+            if(pathList.size() == 0){
+                PostInfo postInfo = new PostInfo(title,contentsList,user.getUid(),new Date());
+                storeUpload(documentReference,postInfo);
+            }
 
 
         }else{
@@ -270,6 +278,7 @@ public class WritePostActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess(Void aVoid) {
                     Log.d(TAG, "DocumentSnapshot successfully written!");
+                    loaderLayout.setVisibility(View.GONE);
                     finish();
                 }
             })
@@ -277,6 +286,7 @@ public class WritePostActivity extends AppCompatActivity {
                 @Override
                 public void onFailure(@NonNull Exception e) {
                     Log.w(TAG, "Error writing document", e);
+                    loaderLayout.setVisibility(View.GONE);
                 }
             });
 

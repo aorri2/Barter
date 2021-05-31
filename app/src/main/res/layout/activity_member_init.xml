@@ -11,7 +11,8 @@
         android:id="@+id/linear_top"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="10dp">
 
         <TextView
             android:id="@+id/textView3"
@@ -42,13 +43,13 @@
             android:padding="5dp">
 
             <Button
-                android:id="@+id/btn_imgModify"
+                android:id="@+id/btn_photo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="사진촬영" />
 
             <Button
-                android:id="@+id/btn_delete"
+                android:id="@+id/btn_gallery"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="갤러리" />
@@ -116,4 +117,9 @@
             android:text="확인" />
 
     </LinearLayout>
+    <include
+        layout="@layout/view_loader"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"/>
 </RelativeLayout>

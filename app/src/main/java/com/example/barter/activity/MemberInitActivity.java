@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -44,6 +45,7 @@ public class MemberInitActivity extends AppCompatActivity {
     private ImageView profileImageView;
     private String profilePath;
     private FirebaseUser user;
+    private RelativeLayout loaderLayout;
 
 
     @Override
@@ -52,12 +54,13 @@ public class MemberInitActivity extends AppCompatActivity {
         setContentView(R.layout.activity_member_init);
         // Initialize Firebase Auth
 
+        loaderLayout = findViewById(R.id.loaderLayout);
         profileImageView = findViewById(R.id.iv_profile);
         profileImageView.setOnClickListener(onClickListener);
 
         findViewById(R.id.btn_checkinfo).setOnClickListener(onClickListener);
-        findViewById(R.id.btn_imgModify).setOnClickListener(onClickListener);
-        findViewById(R.id.btn_delete).setOnClickListener(onClickListener);
+        findViewById(R.id.btn_gallery).setOnClickListener(onClickListener);
+        findViewById(R.id.btn_photo).setOnClickListener(onClickListener);
     }
 
     @Override
@@ -90,7 +93,7 @@ public class MemberInitActivity extends AppCompatActivity {
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.btn_checkinfo:
-                    profileUpdate();
+                    storageUploader();
                     break;
                 case R.id.iv_profile:
                     CardView cardView = findViewById(R.id.cv_buttons);
@@ -99,55 +102,21 @@ public class MemberInitActivity extends AppCompatActivity {
                 }else{
                         cardView.setVisibility(View.VISIBLE);
                 }
-//                    myStartActivity(CameraActivity.class);
                     break;
-                case R.id.btn_imgModify:
+                case R.id.btn_photo:
                     myStartActivity(CameraActivity.class);
                     break;
-                case R.id.btn_delete:
-
-                    if(ContextCompat.checkSelfPermission(MemberInitActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED){
-
-                        ActivityCompat.requestPermissions(MemberInitActivity.this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}
-                                ,1);
-
-                        if(ActivityCompat.shouldShowRequestPermissionRationale(MemberInitActivity.this,
-                                Manifest.permission.READ_EXTERNAL_STORAGE)){
-
-                        }else {
-                            Toast.makeText(MemberInitActivity.this,"권한을 허용해 주세요",Toast.LENGTH_SHORT).show();
-
-
-                        }
-                    }else {
-                        myStartActivity(GalleryActivity.class);
-                    }
-
-
+                case R.id.btn_gallery:
+                    myStartActivity(GalleryActivity.class);
                     break;
             }
         }
     };
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                           int[] grantResults) {
-        switch (requestCode) {
-            case 1:
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    myStartActivity(GalleryActivity.class);
-                }  else {
-                    Toast.makeText(MemberInitActivity.this,"권한을 허용해 주세",Toast.LENGTH_SHORT).show();
-
-                }
-
-        }
-    }
 
 
-    private void profileUpdate() {
+
+    private void storageUploader() {
         final String name = ((EditText) findViewById(R.id.et_name)).getText().toString();
         final String phoneNum = ((EditText) findViewById(R.id.et_phoneNumber)).getText().toString();
         final String date = ((EditText) findViewById(R.id.et_date)).getText().toString();
@@ -157,15 +126,14 @@ public class MemberInitActivity extends AppCompatActivity {
 
         if (name.length() > 0 && phoneNum.length() > 0 && date.length()>5 && address.length() > 0) {
             FirebaseStorage storage = FirebaseStorage.getInstance();
-
             StorageReference storageRef = storage.getReference();
-
             user = FirebaseAuth.getInstance().getCurrentUser();
             final StorageReference mountainImagesRef = storageRef.child("users/"+user.getUid()+"/profileImage.jpg");
 
+            loaderLayout.setVisibility(View.VISIBLE);
             if(profilePath == null){
                 MemberInfo memberInfo = new MemberInfo(name,phoneNum,date,address);
-                uploader(memberInfo);
+                storeUploader(memberInfo);
             }else{
                 try{
                     InputStream stream = new FileInputStream(new File(profilePath));
@@ -188,7 +156,7 @@ public class MemberInitActivity extends AppCompatActivity {
                                 Uri downloadUri = task.getResult();
                                 Log.e("성공", "성공: " + downloadUri);
                                 MemberInfo memberInfo = new MemberInfo(name,phoneNum,date,address, downloadUri.toString());
-                                uploader(memberInfo);
+                                storeUploader(memberInfo);
 
 
 
@@ -213,7 +181,7 @@ public class MemberInitActivity extends AppCompatActivity {
         }
     }
 
-    private void uploader(MemberInfo memberInfo){
+    private void storeUploader(MemberInfo memberInfo){
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         db.collection("users").document(user.getUid()).set(memberInfo)
@@ -221,6 +189,7 @@ public class MemberInitActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(Void aVoid) {
                         Toast.makeText(MemberInitActivity.this, "회원정보 등록 성공.", Toast.LENGTH_SHORT).show();
+                        loaderLayout.setVisibility(View.GONE);
                         finish();
                     }
                 })
@@ -228,6 +197,7 @@ public class MemberInitActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Toast.makeText(MemberInitActivity.this, "회원정보 등록에 실패하였습니다.", Toast.LENGTH_SHORT).show();
+                        loaderLayout.setVisibility(View.GONE);
                         Log.w(TAG, "Error writing document", e);
                     }
                 });
