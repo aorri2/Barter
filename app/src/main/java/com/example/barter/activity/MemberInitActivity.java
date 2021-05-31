@@ -4,8 +4,6 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,6 +18,7 @@ import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.example.barter.GlideApp;
 import com.example.barter.MemberInfo;
 import com.example.barter.R;
 import com.google.android.gms.tasks.Continuation;
@@ -57,8 +56,8 @@ public class MemberInitActivity extends AppCompatActivity {
         profileImageView.setOnClickListener(onClickListener);
 
         findViewById(R.id.btn_checkinfo).setOnClickListener(onClickListener);
-        findViewById(R.id.btn_picshot).setOnClickListener(onClickListener);
-        findViewById(R.id.btn_gallery).setOnClickListener(onClickListener);
+        findViewById(R.id.btn_imgModify).setOnClickListener(onClickListener);
+        findViewById(R.id.btn_delete).setOnClickListener(onClickListener);
     }
 
     @Override
@@ -68,9 +67,10 @@ public class MemberInitActivity extends AppCompatActivity {
             case 0:{
                 if(resultCode == Activity.RESULT_OK){
                     profilePath= data.getStringExtra("profilePath");
-                    Log.e("로그 : ","profilePath" +profilePath);
-                    Bitmap bmp = BitmapFactory.decodeFile(profilePath);
-                    profileImageView.setImageBitmap(bmp);
+                    GlideApp.with(this).load(profilePath).centerCrop().override(500).into(profileImageView);
+
+//                    Bitmap bmp = BitmapFactory.decodeFile(profilePath);
+//                    profileImageView.setImageBitmap(bmp);
 
                 }
                 break;
@@ -101,10 +101,10 @@ public class MemberInitActivity extends AppCompatActivity {
                 }
 //                    myStartActivity(CameraActivity.class);
                     break;
-                case R.id.btn_picshot:
+                case R.id.btn_imgModify:
                     myStartActivity(CameraActivity.class);
                     break;
-                case R.id.btn_gallery:
+                case R.id.btn_delete:
 
                     if(ContextCompat.checkSelfPermission(MemberInitActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED){

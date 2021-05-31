@@ -33,6 +33,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigationView;
@@ -59,7 +60,8 @@ public class MainActivity extends AppCompatActivity {
         if(user == null){
             myStartActivity(SignUpActivity.class);
         }else{
-            myStartActivity(MemberInitActivity.class);
+            myStartActivity(WritePostActivity.class);
+//            myStartActivity(MemberInitActivity.class);
             //  myStartActivity(CameraActivity.class);
 
             DocumentReference docRef = db.collection("users").document(user.getUid());
@@ -95,8 +97,9 @@ public class MainActivity extends AppCompatActivity {
                                 Log.d(TAG, document.getId() + " => " + document.getData());
                                 postlist.add(new PostInfo(
                                         document.getData().get("title").toString(),
-                                        document.getData().get("content").toString(),
-                                        document.getData().get("publisher").toString()
+                                        (ArrayList<String>) document.getData().get("content"),
+                                        document.getData().get("publisher").toString(),
+                                        new Date(document.getDate("createdAt").getTime())
 
                                 ));
                                 Log.e("로그 : ","데이터 : "+document.getData().get("title").toString());

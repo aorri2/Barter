@@ -91,7 +91,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         Bitmap bmp = BitmapFactory.decodeFile(mDataset.get(position));
         imageView.setImageBitmap(bmp);
 
-        GlideApp.with(activity)
+        Glide.with(activity)
                 .load(mDataset.get(position)).placeholder(android.R.drawable.progress_indeterminate_horizontal)
                 .error(android.R.drawable.stat_notify_error)
                 .centerCrop().override(300)

@@ -3,16 +3,19 @@ package com.example.barter;
 import android.text.Editable;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 public class PostInfo {
     private String title;
-    private String content;
+    private ArrayList<String> content;
     private String publisher;
+    private Date createdAt;
 
-    public PostInfo(String title, String content, String publisher) {
+    public PostInfo(String title, ArrayList<String> content, String publisher, Date createdAt) {
         this.title = title;
         this.content = content;
         this.publisher = publisher;
+        this.createdAt = createdAt;
     }
     public String getPublisher() {
         return publisher;
@@ -29,11 +32,19 @@ public class PostInfo {
         this.title = title;
     }
 
-    public String getContent() {
+    public ArrayList<String> getContent() {
         return content;
     }
 
-    public void setContent(String content) {
+    public void setContent(ArrayList<String> content) {
         this.content = content;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 }
