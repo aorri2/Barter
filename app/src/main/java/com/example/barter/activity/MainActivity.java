@@ -13,7 +13,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
+import com.example.barter.Util;
 import com.example.barter.adapter.MainAdapter;
 import com.example.barter.PostInfo;
 import com.example.barter.R;
@@ -22,7 +24,10 @@ import com.example.barter.fragment.Frag2;
 import com.example.barter.fragment.Frag3;
 import com.example.barter.fragment.Frag4;
 import com.example.barter.fragment.Frag5;
+import com.example.barter.listener.OnPostListener;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -52,7 +57,10 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseFirestore firebaseFirestore;
     private  DocumentReference documentReference;
     private RecyclerView recyclerView;
+    private MainAdapter mainAdapter;
+    private ArrayList<PostInfo> postList;
     private static final String TAG = "MainActivity";
+    private Util util;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         findViewById(R.id.floatingActionButton3).setOnClickListener(onClickListener);
         bottomNavigationView = findViewById(R.id.bottomNavi);
-        final ArrayList<PostInfo> postlist = new ArrayList<>();
 
         firebaseFirestore = FirebaseFirestore.getInstance();
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -97,6 +104,8 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
+
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -128,15 +137,30 @@ public class MainActivity extends AppCompatActivity {
 
         setFrag(0); // 첫프래그먼트 화면 지정(ㅇ)안에 넣음 댐
 
+        postList = new ArrayList<>();
+        mainAdapter = new MainAdapter(MainActivity.this,postList);
+
+
+        mainAdapter.setOnPostListener(onPostListener);
+
+        util = new Util(this);
+
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+        recyclerView.setAdapter(mainAdapter);
+
     }
 
 
     @Override
     protected void onResume(){
         super.onResume();
+        postUpdate();
+
+        }
+
+    private void postUpdate(){
         if(firebaseUser != null){
             CollectionReference collectionReference = firebaseFirestore.collection("posts");
 
@@ -146,10 +170,11 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
                             if (task.isSuccessful()) {
-                                ArrayList<PostInfo> postlist = new ArrayList<>();
+
+                                postList.clear();
                                 for (QueryDocumentSnapshot document : task.getResult()) {
                                     Log.d(TAG, document.getId() + " => " + document.getData());
-                                    postlist.add(new PostInfo(
+                                    postList.add(new PostInfo(
                                             document.getData().get("title").toString(),
                                             (ArrayList<String>) document.getData().get("content"),
                                             document.getData().get("publisher").toString(),
@@ -160,19 +185,15 @@ public class MainActivity extends AppCompatActivity {
                                     Log.e("로그 : ","데이터 : "+document.getData().get("title").toString());
 
 
-                                    RecyclerView.Adapter mAdapter = new MainAdapter(MainActivity.this,postlist);
-                                    recyclerView.setAdapter(mAdapter);
                                 }
+                                mainAdapter.notifyDataSetChanged();
                             } else {
                                 Log.d(TAG, "Error getting documents: ", task.getException());
                             }
                         }
                     });
         }
-
-        }
-
-
+    }
 
 
     private void startSignupActivity() {
@@ -185,6 +206,45 @@ public class MainActivity extends AppCompatActivity {
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
+
+    private void myStartActivity(Class c, String id){
+        Intent intent = new Intent(this,c);
+        intent.putExtra("id",id);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+    }
+
+    OnPostListener onPostListener = new OnPostListener() {
+        @Override
+        public void onDelete(String id) {
+            Log.e("로그","삭제"+id);
+
+            firebaseFirestore.collection("posts").document(id)
+                    .delete()
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            util.showToast("게시글을 삭제하였습니다.");
+                            postUpdate();
+//                                        Log.d(TAG, "DocumentSnapshot successfully deleted!");
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            util.showToast("게시글을 삭제하지 못했 습니다.");
+//                                        Log.w(TAG, "Error deleting document", e);
+                        }
+                    });
+        }
+
+        @Override
+        public void onModify(String id) {
+            myStartActivity(WritePostActivity.class, id);
+            Log.e("로그","수정"+id);
+        }
+    };
+
     View.OnClickListener onClickListener = (v) ->{
       switch (v.getId()){
           case R.id.floatingActionButton3:
