@@ -8,13 +8,18 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Path;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.barter.Util;
 import com.example.barter.adapter.MainAdapter;
 import com.example.barter.PostInfo;
@@ -40,6 +45,8 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.core.OrderBy;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -58,9 +65,11 @@ public class MainActivity extends AppCompatActivity {
     private  DocumentReference documentReference;
     private RecyclerView recyclerView;
     private MainAdapter mainAdapter;
+    private StorageReference storageRef;
     private ArrayList<PostInfo> postList;
     private static final String TAG = "MainActivity";
     private Util util;
+    private int successCount;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,6 +80,10 @@ public class MainActivity extends AppCompatActivity {
 
         firebaseFirestore = FirebaseFirestore.getInstance();
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+
+
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        storageRef= storage.getReference();
 
         if(firebaseUser == null){
             myStartActivity(SignUpActivity.class);
@@ -183,6 +196,7 @@ public class MainActivity extends AppCompatActivity {
 
                                     ));
                                     Log.e("로그 : ","데이터 : "+document.getData().get("title").toString());
+                                    Log.e("로그: ","데이터  ID : "+document.getId());
 
 
                                 }
@@ -216,32 +230,51 @@ public class MainActivity extends AppCompatActivity {
 
     OnPostListener onPostListener = new OnPostListener() {
         @Override
-        public void onDelete(String id) {
-            Log.e("로그","삭제"+id);
+        public void onDelete(int position) {
+           final String id = postList.get(position).getId();
+            ArrayList<String> contentsList= postList.get(position).getContent();
 
-            firebaseFirestore.collection("posts").document(id)
-                    .delete()
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+            for (int i=0; i<contentsList.size(); i++){
+
+                String contents = contentsList.get(i);
+                if(Patterns.WEB_URL.matcher(contents).matches() && contents.contains("https://firebasestorage.googleapis.com/v0/b/barter-project-91cd2.appspot.com/o/posts")){
+                    successCount++;
+                    String[] list =contents.split("\\?") ;
+                    String[] list2 =list[0].split("%2F");
+                    String name = list2[list2.length-1];
+
+                    // Create a storage reference from our app
+
+
+// Create a reference to the file to delete
+                    StorageReference desertRef = storageRef.child("posts/"+id+"/"+name);
+
+
+
+// Delete the file
+                    desertRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            util.showToast("게시글을 삭제하였습니다.");
-                            postUpdate();
-//                                        Log.d(TAG, "DocumentSnapshot successfully deleted!");
+
+                            successCount--;
+                            storeUploader(id);
+
                         }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            util.showToast("게시글을 삭제하지 못했 습니다.");
-//                                        Log.w(TAG, "Error deleting document", e);
-                        }
+                    }).addOnFailureListener(exception -> {
+
+                        util.showToast("게시글을 삭제하지 못했 습니다.");
+                        // Uh-oh, an error occurred!
                     });
+                }
+
+            }
+            storeUploader(id);
         }
 
         @Override
-        public void onModify(String id) {
+        public void onModify(int position) {
+            String id = postList.get(position).getId();
             myStartActivity(WritePostActivity.class, id);
-            Log.e("로그","수정"+id);
         }
     };
 
@@ -253,6 +286,25 @@ public class MainActivity extends AppCompatActivity {
               break;
       }
     };
+
+    private void storeUploader(String id){
+        if(successCount == 0){
+            firebaseFirestore.collection("posts").document(id)
+                    .delete()
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            util.showToast("게시글을 삭제하였습니다.");
+                            postUpdate();
+//                                        Log.d(TAG, "DocumentSnapshot successfully deleted!");
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        util.showToast("게시글을 삭제하지 못했 습니다.");
+//                                        Log.w(TAG, "Error deleting document", e);
+                    });
+        }
+    }
 
     private void setFrag(int n){
         fm = getSupportFragmentManager();

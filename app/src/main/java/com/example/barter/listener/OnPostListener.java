@@ -1,8 +1,8 @@
 package com.example.barter.listener;
 
 public interface OnPostListener {
-    void onDelete(String id);
+    void onDelete(int position);
 
 
-    void onModify(String id);
+    void onModify(int position);
 }
