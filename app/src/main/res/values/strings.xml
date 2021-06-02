@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Barter</string>
+    <string name="request_permission">This sample needs camera permission.</string>
+    <string name="camera_error">This device doesn\'t support Camera2 API.</string>
+    <string name="rc_color">splash_background</string>
+    <string name="grant_permis">권한을 허용해 주세요</string>
 </resources>

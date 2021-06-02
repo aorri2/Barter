@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="100dp">
+
+    <ListView
+        android:id="@+id/list_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <ImageView
+        android:id="@+id/iv_img_resource"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/category1"
+        android:layout_alignParentLeft="true"
+        android:scaleType="centerCrop"/>
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="match_parent"
+        android:layout_height="99dp"
+        android:text="도서"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        android:gravity="center"/>
+
+    <View
+        android:layout_below="@+id/tv_title"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#505050"/>
+
+</RelativeLayout>
